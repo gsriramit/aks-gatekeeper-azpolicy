@@ -1,0 +1,12 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAzurePodSpreadConstraintEnforced
+metadata:
+  name: prp-pod-spreadconstraint-mandate
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    excludedContainers: {{ .Values.excludedContainers }}
+    excludedImages: {{ .Values.excludedImages }}

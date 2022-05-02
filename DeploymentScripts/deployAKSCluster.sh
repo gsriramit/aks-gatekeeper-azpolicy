@@ -57,7 +57,10 @@ az policy assignment create --name 'do-not-allow-container-privilege-escalation'
 -p "{ \"Effect\": \
     { \"value\": \"deny\" } }"
 # Create a test deployment that creates a pod/container with elevatedprivileges:true .This should fail
+kubectl apply -f PrivilegedPod.yaml
 
+# Get the pod information (replace the pod's name with the actual value)
+kubectl get -o json pod podplacementdeployment-6cdcc9585-
 
 # Apply the Custom Policy that handles the reliability of the workload pods
 

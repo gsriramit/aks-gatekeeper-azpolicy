@@ -1,12 +1,12 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: k8sazurecontainernoprivilegeescalation
+  name: k8sazurepodspreadconstraintsenforced
 spec:
   crd:
     spec:
       names:
-        kind: K8sAzureContainerNoPrivilegeEscalation
+        kind: K8sAzurePodSpreadConstraintEnforced
       validation:
         # Schema for the `parameters` field
         openAPIV3Schema:
@@ -27,7 +27,7 @@ spec:
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
-        package k8sazurecontainernoprivilegeescalation
+        package k8sazurepodspreadconstraintsenforced
 
         import data.lib.exclude_container_image.is_excluded
 
@@ -35,38 +35,26 @@ spec:
         ## allowPrivilegeEscalation=true
         ## runAsUser != 0 + missing allowPrivilegeEscalation=false
 
-        violation[{"msg": msg, "details": {}}] {
-            not input.review.object.spec.nodeSelector["kubernetes.io/os"] == "windows"
-            c := input_containers[_]
-            not input_container_excluded(c.name)
-            not is_excluded(c)
-            input_allow_privilege_escalation(c)
-            msg := sprintf("Privilege escalation container is not allowed: %v", [c.name])
+        violation[{"msg": msg, "details": {}}] {            
+            spec := input.request.object.spec
+            podSpreadConstraintDefined(spec)
+            SpreadConstraintsEmpty(spec)
+            msg := sprintf("At least 1 spread constraint needs to be defined: %v", [])   
         }
 
-        input_allow_privilege_escalation(c) {
-            c.securityContext.allowPrivilegeEscalation == true
+        has_key(x, k) { 
+          # https://www.openpolicyagent.org/docs/latest/policy-reference/#types
+          #_ = x[k]
+          type_name(x[k])
         }
-        input_allow_privilege_escalation(c) {
-            not c.securityContext.allowPrivilegeEscalation == false
-            c.securityContext.runAsUser != 0
+
+        podSpreadConstraintDefined(spec) {	 
+            has_key(spec,"topologySpreadConstraints")
         }
-        input_allow_privilege_escalation(c) {
-            not c.securityContext.allowPrivilegeEscalation == false
-            not c.securityContext.runAsUser
-            input.review.object.spec.securityContext.runAsUser != 0
-        }
-        input_containers[c] {
-            c := input.review.object.spec.containers[_]
-        }
-        input_containers[c] {
-            c := input.review.object.spec.initContainers[_]
-        }
-        input_containers[c] {
-          c := input.review.object.spec.ephemeralContainers[_]
-        }
-        input_container_excluded(field) {
-            field == input.parameters.excludedContainers[_]
+
+        SpreadConstraintsEmpty(spec) {
+              constraintcount:= count(spec.topologySpreadConstraints) 
+              constraintcount == 0
         }
       libs:
         - |
