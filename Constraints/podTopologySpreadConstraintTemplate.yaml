@@ -37,8 +37,8 @@ spec:
 
         violation[{"msg": msg, "details": {}}] {            
             spec := input.review.object.spec
-            podSpreadConstraintDefined(spec)
-            SpreadConstraintsEmpty(spec)
+            not podSpreadConstraintDefined(spec)
+            #SpreadConstraintsEmpty(spec)
             msg := sprintf("At least 1 spread constraint needs to be defined: %v", [])   
         }
 
