@@ -1,0 +1,98 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "annotations": {
+            "deployment.kubernetes.io/revision": "2",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"reliablity\"},\"name\":\"podplacementdeployment\",\"namespace\":\"default\"},\"spec\":{\"replicas\":10,\"selector\":{\"matchLabels\":{\"app\":\"reliability\"}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"reliability\"}},\"spec\":{\"containers\":[{\"image\":\"k8s.gcr.io/pause:3.1\",\"name\":\"pause\"}],\"topologySpreadConstraints\":[{\"labelSelector\":{\"matchLabels\":{\"foo\":\"reliability\"}},\"maxSkew\":1,\"topologyKey\":\"topology.kubernetes.io/zone\",\"whenUnsatisfiable\":\"ScheduleAnyway\"}]}}}}\n"
+        },
+        "creationTimestamp": "2022-05-02T06:08:32Z",
+        "generation": 3,
+        "labels": {
+            "app": "reliablity"
+        },
+        "name": "podplacementdeployment",
+        "namespace": "default",
+        "resourceVersion": "10318",
+        "uid": "9fa05673-10b3-4b7b-ae89-0fe85551a971"
+    },
+    "spec": {
+        "progressDeadlineSeconds": 600,
+        "replicas": 10,
+        "revisionHistoryLimit": 10,
+        "selector": {
+            "matchLabels": {
+                "app": "reliability"
+            }
+        },
+        "strategy": {
+            "rollingUpdate": {
+                "maxSurge": "25%",
+                "maxUnavailable": "25%"
+            },
+            "type": "RollingUpdate"
+        },
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "reliability"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "image": "k8s.gcr.io/pause:3.1",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "pause",
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File"
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "terminationGracePeriodSeconds": 30,
+                "topologySpreadConstraints": [
+                    {
+                        "labelSelector": {
+                            "matchLabels": {
+                                "foo": "reliability"
+                            }
+                        },
+                        "maxSkew": 1,
+                        "topologyKey": "topology.kubernetes.io/zone",
+                        "whenUnsatisfiable": "ScheduleAnyway"
+                    }
+                ]
+            }
+        }
+    },
+    "status": {
+        "availableReplicas": 10,
+        "conditions": [
+            {
+                "lastTransitionTime": "2022-05-02T06:08:32Z",
+                "lastUpdateTime": "2022-05-02T06:15:03Z",
+                "message": "ReplicaSet \"podplacementdeployment-6cdcc9585\" has successfully progressed.",
+                "reason": "NewReplicaSetAvailable",
+                "status": "True",
+                "type": "Progressing"
+            },
+            {
+                "lastTransitionTime": "2022-05-02T06:16:13Z",
+                "lastUpdateTime": "2022-05-02T06:16:13Z",
+                "message": "Deployment has minimum availability.",
+                "reason": "MinimumReplicasAvailable",
+                "status": "True",
+                "type": "Available"
+            }
+        ],
+        "observedGeneration": 3,
+        "readyReplicas": 10,
+        "replicas": 10,
+        "updatedReplicas": 10
+    }
+}
