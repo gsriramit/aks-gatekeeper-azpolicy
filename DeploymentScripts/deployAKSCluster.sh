@@ -68,4 +68,13 @@ az policy assignment create --name 'mandate-pod-spread-constraints' \
 --display-name 'Kubernetes clusters should not allow pods without PodTopologySpreadConstraint' \
 --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCEGROUP_NAME --policy $PODSPREADCONSTRAINTMANDATEPOLICYNAME
 
+# Verify if the constraint template was applied to the cluster
+# this should list the constraint applied through the new azure policy
+# NAME
+#k8sazurepodspreadconstraintsenforced
+kubectl get constrainttemplates
+
 # Create a test deployment that creates a pod spec without the "topologySpreadConstraints" property. This should ideally fail
+kubectl apply -f testNoSpreadconstraint.yaml
+# The deployment should get rejected with the appropriate violation error message
+# Error from server ([azurepolicy-prp-pod-spreadconstraint-manda-45f6680c714279da4e5b] At least 1 spread constraint needs to be defined: %!v(MISSING)): error when creating "testNoSpreadconstraint.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [azurepolicy-prp-pod-spreadconstraint-manda-45f6680c714279da4e5b] At least 1 spread constraint needs to be defined: %!v(MISSING)
