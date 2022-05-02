@@ -1,5 +1,5 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
-kind: K8sAzurePodSpreadConstraintEnforced
+kind: K8sAzurePodSpreadConstraintsEnforced
 metadata:
   name: prp-pod-spreadconstraint-mandate
 spec:

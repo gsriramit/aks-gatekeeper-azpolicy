@@ -6,7 +6,7 @@ spec:
   crd:
     spec:
       names:
-        kind: K8sAzurePodSpreadConstraintEnforced
+        kind: K8sAzurePodSpreadConstraintsEnforced
       validation:
         # Schema for the `parameters` field
         openAPIV3Schema:
