@@ -27,9 +27,7 @@ spec:
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
-        package k8sazurepodspreadconstraintsenforced
-
-        import data.lib.exclude_container_image.is_excluded
+        package k8sazurepodspreadconstraintsenforced        
 
         # The following scenerios will be viewed as violations
         ## absence of the topologySpreadConstraints property in the pod spec
@@ -37,9 +35,8 @@ spec:
 
         violation[{"msg": msg, "details": {}}] {            
             spec := input.review.object.spec
-            not podSpreadConstraintDefined(spec)
-            #SpreadConstraintsEmpty(spec)
-            msg := sprintf("At least 1 spread constraint needs to be defined: %v", [])   
+            not podSpreadConstraintDefined(spec)            
+            msg := sprintf("At least 1 spread constraint needs to be defined: %v", [input.review.object.metadata.name])   
         }
 
         has_key(x, k) { 
@@ -56,21 +53,3 @@ spec:
               constraintcount:= count(spec.topologySpreadConstraints) 
               constraintcount == 0
         }
-      libs:
-        - |
-          package lib.exclude_container_image
-          is_excluded(container) {
-              exclude_images := object.get(object.get(input, "parameters", {}), "excludedImages", [])
-              img := container.image
-              exclusion := exclude_images[_]
-              _matches_exclusion(img, exclusion)
-          }
-          _matches_exclusion(img, exclusion) {
-              not endswith(exclusion, "*")
-              exclusion == img
-          }
-          _matches_exclusion(img, exclusion) {
-              endswith(exclusion, "*")
-              prefix := trim_suffix(exclusion, "*")
-              startswith(img, prefix)
-          }
