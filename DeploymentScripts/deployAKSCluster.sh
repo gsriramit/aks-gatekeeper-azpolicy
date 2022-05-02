@@ -7,6 +7,7 @@ CLUSTER_NAME="aks-dev-01"
 PLUGIN=azure
 PREVENT_PRIVILEGEDPODS_POLICYID='/providers/Microsoft.Authorization/policyDefinitions/1c6e92c9-99f0-4e55-9cf2-0c234dc48f99'
 PREVENT_PRIVILEGEDPODS_POLICYNAME='1c6e92c9-99f0-4e55-9cf2-0c234dc48f99'
+PODSPREADCONSTRAINTMANDATEPOLICYNAME='04fde83b-20b2-43cb-bdac-763577eb3730'
 
 # login as a user and set the appropriate subscription ID
 az login
@@ -36,7 +37,7 @@ az aks create -g $RESOURCEGROUP_NAME \
 --zones 1 2 3
 
 # Get the credentials to the working cluster
-az aks get-credentials --resource-group $RESOURCEGROUP_NAME --name $CLUSTER_NAME
+az aks get-credentials --resource-group $RESOURCEGROUP_NAME --name $CLUSTER_NAME --admin
 
 # Verify the node placement. This is a mandatory requirement for the pod topology spread constraint to work with the "zone" key
 kubectl describe nodes | grep -e "Name:" -e "topology.kubernetes.io/zone"
@@ -60,8 +61,11 @@ az policy assignment create --name 'do-not-allow-container-privilege-escalation'
 kubectl apply -f PrivilegedPod.yaml
 
 # Get the pod information (replace the pod's name with the actual value)
-kubectl get -o json pod podplacementdeployment-6cdcc9585-
+kubectl get -o json pod <podplacementdeployment-6cdcc9585->
 
-# Apply the Custom Policy that handles the reliability of the workload pods
+# Apply the Custom Policy that ensures the reliability of the workload pods by enforcing zone-redunandancy
+az policy assignment create --name 'mandate-pod-spread-constraints' \
+--display-name 'Kubernetes clusters should not allow pods without PodTopologySpreadConstraint' \
+--scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCEGROUP_NAME --policy $PODSPREADCONSTRAINTMANDATEPOLICYNAME
 
 # Create a test deployment that creates a pod spec without the "topologySpreadConstraints" property. This should ideally fail

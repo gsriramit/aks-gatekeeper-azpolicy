@@ -31,12 +31,12 @@ spec:
 
         import data.lib.exclude_container_image.is_excluded
 
-        # The following scenerios will be viewed as violations. Windows containers are not supported
-        ## allowPrivilegeEscalation=true
-        ## runAsUser != 0 + missing allowPrivilegeEscalation=false
+        # The following scenerios will be viewed as violations
+        ## absence of the topologySpreadConstraints property in the pod spec
+        ## topologySpreadConstraints property is present but there arent valid constraints defined within the array (count(arr) ==0)
 
         violation[{"msg": msg, "details": {}}] {            
-            spec := input.request.object.spec
+            spec := input.review.object.spec
             podSpreadConstraintDefined(spec)
             SpreadConstraintsEmpty(spec)
             msg := sprintf("At least 1 spread constraint needs to be defined: %v", [])   

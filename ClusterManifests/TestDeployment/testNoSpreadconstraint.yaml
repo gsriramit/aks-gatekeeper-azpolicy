@@ -1,0 +1,11 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mypod
+  labels:
+    app: reliablity
+spec:
+  topologySpreadConstraints: []  
+  containers:
+  - name: pause
+    image: k8s.gcr.io/pause:3.1
