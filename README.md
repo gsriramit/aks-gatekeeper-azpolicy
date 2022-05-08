@@ -40,3 +40,70 @@ This repository contains deployment scripts and templates that help in setting u
      - The OPA engine in the Gatekeeper watches for the creation or updates of these CRDs and then replicates them to make the REGO policies available locally
      - The OPA engine also watches and replicates the Kubernetes objects (Pods, Ingress, Deploy, Daemon Sets etc.,) locally. This is required if the policy rule requires checking or evaluation against the existing objects in the cluster
      - Validation happens at the Gatekeeper and the request is either accepted or rejected
+
+
+## Deployment & Validation 
+Follow the steps in the deployAKSCluster.sh file. The script file has additional comments included at each step to explain the working of the commands  
+
+### Points to Note
+
+#### Configuration of the AKS Cluster
+1. The AKS cluster is configured to include the Azure Policy Add-on 
+2. The Cluster will have 3 nodes which are distributed across availability zones 1,2 and 3
+![image](https://user-images.githubusercontent.com/13979783/167292181-5654da73-595e-450e-9157-574331ca8eaf.png)
+
+### Check the node placement across the availability zones
+```
+# Verify the node placement. This is a mandatory requirement for the pod topology spread constraint to work with the "zone" key
+kubectl describe nodes | grep -e "Name:" -e "topology.kubernetes.io/zone"
+kubectl get nodes -o custom-columns=NAME:'{.metadata.name}',REGION:'{.metadata.labels.topology\.kubernetes\.io/region}',ZONE:'{metadata.labels.topology\.kubernetes\.io/zone}'
+```
+![image](https://user-images.githubusercontent.com/13979783/167292509-dfef43ac-34ee-4638-807a-d5ba34e455e7.png)
+
+#### Check for the presence of the Gatekeeper pods in the corresponding namespace
+![image](https://user-images.githubusercontent.com/13979783/167292552-7156b848-0eda-4be1-9e88-2e5e0b9f06f6.png)
+
+#### Policy Assignment 
+The Azure Policies can be applied through the Azure portal or through PS or CLI commands. The script file has the corresponding commands required to apply 2 policies 
+1. Kubernetes clusters should not allow container privilege escalation
+2. Kubernetes clusters should not allow pods without PodTopologySpreadConstraint  
+**Syntax**
+```
+########## Illustration of Pod Reliability Policies ################################
+# Apply the Custom Policy that ensures the reliability of the workload pods by enforcing zone-redunandancy
+az policy assignment create --name 'mandate-pod-spread-constraints' \
+--display-name 'Kubernetes clusters should not allow pods without PodTopologySpreadConstraint' \
+--scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCEGROUP_NAME --policy $PODSPREADCONSTRAINTMANDATEPOLICYNAME
+```
+
+#### Verify the presence of the newly created Constraint Templates & Constraint Types
+The assignment of the 2 azure policies to this AKS cluster should have imported the constraint templates and the constraint objects 
+![image](https://user-images.githubusercontent.com/13979783/167292715-1c283996-2064-4840-82aa-0fc64d18a624.png)
+
+![image](https://user-images.githubusercontent.com/13979783/167292817-78759e6d-68bb-4dcc-ab52-ef8643a1361d.png)
+
+#### Verify the creation of Privileged Containers and Pod without "topologySpreadConstraints"
+Both these deployments would fail owing to the violation of the Policies that have been enforced w.r.t security and resiliency. **Note**: If the effect of the Azure Policies had been defined as **"Audit"** instead of **"Deny"** the these deployments would be completed. 
+![image](https://user-images.githubusercontent.com/13979783/167292919-dbf10b51-f440-4b92-b54e-fbabd50d1aec.png)
+
+#### Modify the Policy Effect to Audit and Check the Violations
+```
+## describe the specific instance of the constraint created to read the policy violations
+## Note: The violations array will be populated only if the Policy Action is set to "Audit" and not "Deny"
+# Replace the name of the constraint instance (specified in < >) with the value that you obtain in the previous step
+kubectl describe K8sAzurePodSpreadConstraintsEnforced <azurepolicy-prp-pod-spreadconstraint-manda-bce35ea75962704aa50c>
+
+######################################################
+#Total Violations:  1
+# Violations:
+#  Enforcement Action:  dryrun
+#  Kind:                Pod
+#  Message:             At least 1 spread constraint needs to be defined: mypod
+#  Name:                mypod
+#  Namespace:           default    
+
+##############################################################################
+```
+
+
+
