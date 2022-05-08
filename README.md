@@ -105,6 +105,14 @@ kubectl describe K8sAzurePodSpreadConstraintsEnforced <azurepolicy-prp-pod-sprea
 ##############################################################################
 ```
 
+## OPA Playground Sample
+The following page contains the playground sample that you can use to write your policies and evaulate against an admission review request
+https://play.openpolicyagent.org/p/01ka5fGoe3
+**Note:**
+1. Use the request format for the admissions review request - https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#webhook-request-and-response
+2. Export the request details of the pod/deployment should be placed within the **object** property of the admission request
+3. The official documentation uses the **request** parent property/object. This is now changed to **review**. So the path traversal to read the pod spec would be **input.review.object.spec**. "Input" is a reserved keyword in REGO that denotes the incoming request object  
+
 ## Presentation Deck
 Find it in this [link](PresentationDeck/GAB_2022_Sriram_UnifiedGovernanceForAKS_v2.pptx)
 
