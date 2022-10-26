@@ -1,0 +1,32 @@
+name: manage-azure-policy-908ac8af
+on:
+  workflow_dispatch:
+    inputs:
+      remarks:
+        description: 'Reason for triggering the workflow run'
+        required: false
+        default: 'Updating Azure Policies'
+
+
+## Uncomment the following if you wish to automatically trigger workflow run with every commit
+#
+#  push:
+#    paths:
+#      - 'IngressPolicyTesting/policies/Kubernetes_Ingress_resources_should_have_ssl_specific_annotations_6ad02455-c42b-4fb0-80a0-7d854084d37f/**'
+#      - .github/workflows/manage-azure-policy-908ac8af.yml
+jobs:
+  apply-azure-policy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS_908ac8af}}
+        allow-no-subscriptions: true
+    - name: Create or Update Azure Policies
+      uses: azure/manage-azure-policy@v0
+      with:
+        paths: |
+          IngressPolicyTesting/policies/Kubernetes_Ingress_resources_should_have_ssl_specific_annotations_6ad02455-c42b-4fb0-80a0-7d854084d37f/**

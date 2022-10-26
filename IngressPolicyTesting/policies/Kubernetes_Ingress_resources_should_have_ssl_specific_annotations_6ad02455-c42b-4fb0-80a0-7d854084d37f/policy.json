@@ -1,0 +1,111 @@
+{
+ "properties": {
+  "displayName": "Kubernetes Ingress resources should have ssl specific annotations",
+  "policyType": "Custom",
+  "mode": "Microsoft.Kubernetes.Data",
+  "description": "Do not allow Ingress resources to be created if the SSL-specific annotation is missing",
+  "metadata": {
+   "category": "Kubernetes",
+   "createdBy": "d5d5599b-0ddd-46b0-9d54-8f0a04f4b5e6",
+   "createdOn": "2022-10-26T13:39:52.1735918Z",
+   "updatedBy": null,
+   "updatedOn": null
+  },
+  "parameters": {
+   "effect": {
+    "type": "String",
+    "metadata": {
+     "displayName": "Effect",
+     "description": "'audit' allows a non-compliant resource to be created or updated, but flags it as non-compliant. 'deny' blocks the non-compliant resource creation or update. 'disabled' turns off the policy."
+    },
+    "allowedValues": [
+     "audit",
+     "Audit",
+     "deny",
+     "Deny",
+     "disabled",
+     "Disabled"
+    ],
+    "defaultValue": "deny"
+   },
+   "excludedNamespaces": {
+    "type": "Array",
+    "metadata": {
+     "displayName": "Namespace exclusions",
+     "description": "List of Kubernetes namespaces to exclude from policy evaluation. System namespaces \"kube-system\", \"gatekeeper-system\" and \"azure-arc\" are always excluded by design."
+    },
+    "defaultValue": [
+     "kube-system",
+     "gatekeeper-system",
+     "azure-arc"
+    ]
+   },
+   "namespaces": {
+    "type": "Array",
+    "metadata": {
+     "displayName": "Namespace inclusions",
+     "description": "List of Kubernetes namespaces to only include in policy evaluation. An empty list means the policy is applied to all resources in all namespaces."
+    },
+    "defaultValue": []
+   },
+   "labelSelector": {
+    "type": "Object",
+    "metadata": {
+     "displayName": "Kubernetes label selector",
+     "description": "Label query to select Kubernetes resources for policy evaluation. An empty label selector matches all Kubernetes resources."
+    },
+    "defaultValue": {}
+   },
+   "annotations": {
+    "type": "Object",
+    "metadata": {
+     "displayName": "Required Annotations",
+     "description": "Annotations to be forced on certain Kubernetes resource. The annotations requires key and value allowed regex. Note that annotation values only support string values",
+     "portalReview": true
+    }
+   },
+   "kind": {
+    "type": "String",
+    "metadata": {
+     "displayName": "Resource Kind",
+     "description": "Kubernetes resource kind to enforce annotations for. One assignment can only restrict single resource kind. It is case-sensitive, please start with upper case. For example \"Pod\"",
+     "portalReview": true
+    }
+   }
+  },
+  "policyRule": {
+   "if": {
+    "field": "type",
+    "in": [
+     "AKS Engine",
+     "Microsoft.Kubernetes/connectedClusters",
+     "Microsoft.ContainerService/managedClusters"
+    ]
+   },
+   "then": {
+    "effect": "[parameters('effect')]",
+    "details": {
+     "templateInfo": {
+      "sourceType": "PublicURL",
+      "url": "https://raw.githubusercontent.com/ArchanaSoundararajan/policy/main/constrainttempalte.yaml"
+     },
+     "apiGroups": [
+      "networking.k8s.io"
+     ],
+     "kinds": [
+      "[parameters('kind')]"
+     ],
+     "excludedNamespaces": "[parameters('excludedNamespaces')]",
+     "namespaces": "[parameters('namespaces')]",
+     "labelSelector": "[parameters('labelSelector')]",
+     "values": {
+      "annotations": "[parameters('annotations').annotations]"
+     }
+    }
+   }
+  }
+ },
+ "id": "/subscriptions/695471ea-1fc3-42ee-a854-eab6c3009516/providers/Microsoft.Authorization/policyDefinitions/6ad02455-c42b-4fb0-80a0-7d854084d37f",
+ "type": "Microsoft.Authorization/policyDefinitions",
+ "name": "6ad02455-c42b-4fb0-80a0-7d854084d37f"
+}
